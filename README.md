@@ -1,8 +1,8 @@
 build: docker build . --tag aitracker-oracle
-tag: docker tag aitracker-oracle id997/aitracker-oracle:0.0.4
-push: docker push id997/aitracker-oracle:0.0.2
-hash: docker pull id997/aitracker-oracle:0.0.2 | grep "Digest: sha256:" | sed 's/.*sha256:/0x/'
-link: registry.hub.docker.com/id997/aitracker-oracle:0.0.2
+tag: docker tag aitracker-oracle id997/aitracker-oracle:0.1.0
+push: docker push id997/aitracker-oracle:0.1.0
+hash: docker pull id997/aitracker-oracle:0.1.0 | grep "Digest: sha256:" | sed 's/.*sha256:/0x/'
+link: registry.hub.docker.com/id997/aitracker-oracle:0.1.0
 
 
 run with input_files: docker run \

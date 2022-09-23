@@ -62,30 +62,54 @@ class Binance:
 
 
 if __name__ == '__main__':
+
+    try:
+        symbol = "BTCUSDT"
+        
+        filepath = iexec_in + "/" + iexec_in_filename
+        f = open(filepath,'r')
+        result_text = f.read()
+        result_object = json.loads(result_text)
+        f.close()
+
+        prediction = result_object["prediction"]
+        prediction_for_oracle = prediction["prediction_for_oracle"]
+        signature = prediction["signature_for_oracle"]
+
+        prediction_encrypted = prediction_for_oracle["prediction_encrypted"]
+        timestamp = prediction_for_oracle["timestamp"]
+        
+        ait_oracle = AITrackerOracle('./src/' + 'public_key_ml.pem','./src/' + 'private_key_oracle.pem')
+
+        print(json.dumps(prediction_for_oracle))
+        verify = ait_oracle.verify(json.dumps(prediction_for_oracle),signature)
+        if(not verify):
+            print("verification failed")
+
+        prediction_decrypted = ait_oracle.decrypt(json.dumps(prediction_encrypted))
     
-    filepath = iexec_in + "/" + iexec_in_filename
-    f = open(filepath,'r')
-    result_text = f.read()
-    result_object = json.loads(result_text)
-    f.close()
+        seq_x = Binance.fetchCandlesticks(symbol,timestamp)
+        markettrend = Utils.checkMarketTrend(seq_x,timestamp)
+        print(prediction_decrypted)
+        print(markettrend)
+        isCorrect = None
+        if(markettrend == prediction_decrypted):
+            print("prediction true")
+            isCorrect = True
+        else:
+            print("prediction false")
+            isCorrect = False
 
-    prediction_with_signature = result_object["prediction_with_signature"]
-
-    prediction_for_oracle = prediction_with_signature["prediction_for_oracle"]
-    signature = prediction_with_signature["signature"]
-
-    prediction_encrypted = prediction_for_oracle["prediction_encrypted"]
-    symbol = prediction_for_oracle["symbol"]
-    timestamp = prediction_for_oracle["timestamp"]
     
-    ait_oracle = AITrackerOracle('./src/' + 'public_key_ml.pem','./src/' + 'private_key_oracle.pem')
+    except Exception as e:
+        print('Execution Failure: {}'.format(e))
 
-    print(json.dumps(prediction_for_oracle))
-    verify = ait_oracle.verify(json.dumps(prediction_for_oracle),signature)
-    if(not verify):
-        print("verification failed")
+    print(iexec_out)
+    print('isCorrect: {}'.format(isCorrect))
+    with open(iexec_out + '/result.json', 'w+') as fout:
+        json.dump({"isCorrect" : isCorrect}, fout)
 
-    prediction_decrypted = ait_oracle.decrypt(json.dumps(prediction_encrypted))
- 
-    seq_x = Binance.fetchCandlesticks(symbol,timestamp)
-    markettrend = Utils.checkMarketTrend(seq_x,timestamp)
+    with open(iexec_out + '/computed.json', 'w+') as f:
+        json.dump({"deterministic-output-path" : iexec_out + '/result.json'}, f)
+
+
