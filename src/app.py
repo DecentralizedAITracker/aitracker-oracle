@@ -64,7 +64,7 @@ class Binance:
 if __name__ == '__main__':
 
     try:
-        symbol = "BTCUSDT"
+        symbol = "RLCUSDT"
         
         filepath = iexec_in + "/" + iexec_in_filename
         f = open(filepath,'r')
